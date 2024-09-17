@@ -11,12 +11,27 @@ fn handle_connection(mut stream: TcpStream) {
         .take_while(|line| !line.is_empty())
         .collect();
     let collection: Vec<&str> = http_request[0].split(" ").collect();
-    println!("{:?}",collection[1]);
-    if collection[1]=="/"{
+    // Split this route too
+    let route_part:Vec<&str>=collection[1].split("/").collect();
+    println!("{:?}",route_part);
+    if route_part[0]=="" &&  route_part[1]==""{
         let response = "HTTP/1.1 200 OK\r\n\r\n";
 
         stream.write_all(response.as_bytes()).unwrap();
-    }else {
+    }else if route_part[0]=="" && route_part[1]=="echo"   {
+        // send the body
+        let response = format!(
+            "HTTP/1.1 200 OK\r\n\
+        Content-Type: text/html\r\n\
+        Content-Length: {}\r\n\
+        Connection: close\r\n\r\n\
+        {}",
+            route_part[2].len(),
+            route_part[2]
+        );
+        stream.write_all(response.as_bytes()).unwrap();
+
+    } else {
         let response = "HTTP/1.1 404 Not Found\r\n\r\n";
         stream.write_all(response.as_bytes()).unwrap();
     }
