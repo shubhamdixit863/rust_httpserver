@@ -13,7 +13,6 @@ fn handle_connection(mut stream: TcpStream) {
     let collection: Vec<&str> = http_request[0].split(" ").collect();
     // Split this route too
     let route_part:Vec<&str>=collection[1].split("/").collect();
-    println!("{:?}",route_part);
     if route_part[0]=="" &&  route_part[1]==""{
         let response = "HTTP/1.1 200 OK\r\n\r\n";
 
@@ -22,7 +21,7 @@ fn handle_connection(mut stream: TcpStream) {
         // send the body
         let response = format!(
             "HTTP/1.1 200 OK\r\n\
-        Content-Type: text/html\r\n\
+        Content-Type: text/plain\r\n\
         Content-Length: {}\r\n\
         Connection: close\r\n\r\n\
         {}",
