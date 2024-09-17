@@ -10,10 +10,18 @@ fn handle_connection(mut stream: TcpStream) {
         .map(|result| result.unwrap())
         .take_while(|line| !line.is_empty())
         .collect();
+    let collection: Vec<&str> = http_request[0].split(" ").collect();
+    println!("{:?}",collection[1]);
+    if collection[1]=="/"{
+        let response = "HTTP/1.1 200 OK\r\n\r\n";
 
-    let response = "HTTP/1.1 200 OK\r\n\r\n";
+        stream.write_all(response.as_bytes()).unwrap();
+    }else {
+        let response = "HTTP/1.1 404 Not Found\r\n\r\n";
+        stream.write_all(response.as_bytes()).unwrap();
+    }
 
-    stream.write_all(response.as_bytes()).unwrap();
+
 }
 fn main() {
     // You can use print statements as follows for debugging, they'll be visible when running tests.
