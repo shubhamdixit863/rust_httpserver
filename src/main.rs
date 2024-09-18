@@ -10,6 +10,11 @@ fn handle_connection(mut stream: TcpStream) {
         .map(|result| result.unwrap())
         .take_while(|line| !line.is_empty())
         .collect();
+
+    let user_agent = http_request.iter()
+        .find(|&header| header.starts_with("User-Agent: "))
+        .map(|header| header.trim_start_matches("User-Agent: "))
+        .unwrap_or("User-Agent not found");
     let collection: Vec<&str> = http_request[0].split(" ").collect();
     // Split this route too
     let route_part:Vec<&str>=collection[1].split("/").collect();
@@ -30,6 +35,19 @@ fn handle_connection(mut stream: TcpStream) {
         );
         stream.write_all(response.as_bytes()).unwrap();
 
+    } else if route_part[0]=="" && route_part[1]=="user-agent"{
+        let response = format!(
+            "HTTP/1.1 200 OK\r\n\
+        Content-Type: text/plain\r\n\
+        Content-Length: {}\r\n\
+        Connection: close\r\n\r\n\
+        {}",
+            user_agent.len(),
+            user_agent
+        );
+        stream.write_all(response.as_bytes()).unwrap();
+
+
     } else {
         let response = "HTTP/1.1 404 Not Found\r\n\r\n";
         stream.write_all(response.as_bytes()).unwrap();
@@ -48,7 +66,6 @@ fn main() {
     for stream in listener.incoming() {
         match stream {
             Ok(_stream) => {
-                println!("accepted new connection");
                 handle_connection(_stream)
             }
             Err(e) => {
