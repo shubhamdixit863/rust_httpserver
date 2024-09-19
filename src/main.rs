@@ -1,3 +1,4 @@
+use std::fmt::format;
 use std::io::{BufRead, BufReader, Write};
 #[allow(unused_imports)]
 use std::net::TcpListener;
@@ -53,7 +54,7 @@ fn handle_connection(mut stream: TcpStream) {
     }else if route_part[0]=="files" {
 
         // Read the file whose name is route_part[1]
-        let contents = fs::read_to_string(route_part[1]);
+        let contents = fs::read_to_string(format!("tmp/{}",route_part[1]));
 
 
         match contents {
@@ -70,7 +71,7 @@ fn handle_connection(mut stream: TcpStream) {
                 stream.write_all(response.as_bytes()).unwrap();
 
             },
-            Err(e)=>{
+            Err(_e)=>{
                 let response = format!(
                     "HTTP/1.1 404 Not Found\r\n\
         Content-Type: text/plain\r\n\
