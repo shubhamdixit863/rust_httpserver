@@ -51,10 +51,11 @@ fn handle_connection(mut stream: TcpStream) {
         stream.write_all(response.as_bytes()).unwrap();
 
 
-    }else if route_part[0]=="files" {
+    }else if route_part[0]=="" && route_part[1]=="files" {
+        println!("{}",route_part[2]);
 
         // Read the file whose name is route_part[1]
-        let contents = fs::read_to_string(format!("tmp/{}",route_part[1]));
+        let contents = fs::read_to_string(format!("tmp/{}",route_part[2]));
 
 
         match contents {
@@ -72,6 +73,7 @@ fn handle_connection(mut stream: TcpStream) {
 
             },
             Err(_e)=>{
+                println!("{:?}",_e);
                 let response = format!(
                     "HTTP/1.1 404 Not Found\r\n\
         Content-Type: text/plain\r\n\
