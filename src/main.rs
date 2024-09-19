@@ -3,7 +3,7 @@ use std::io::{BufRead, BufReader, Write};
 #[allow(unused_imports)]
 use std::net::TcpListener;
 use std::net::TcpStream;
-use std::thread;
+use std::{env, thread};
 use std::fs;
 
 fn handle_connection(mut stream: TcpStream) {
@@ -52,22 +52,24 @@ fn handle_connection(mut stream: TcpStream) {
 
 
     }else if route_part[0]=="" && route_part[1]=="files" {
-        println!("{}",route_part[2]);
+        let env_args: Vec<String> = env::args().collect();
+        let mut dir = env_args[2].clone();
+        dir.push_str(&route_part[2]);
+        let file = fs::read(dir);
 
         // Read the file whose name is route_part[1]
-        let contents = fs::read_to_string(format!("tmp/{}",route_part[2]));
 
 
-        match contents {
+        match file {
             Ok(_contents)=>{
                 let response = format!(
                     "HTTP/1.1 200 OK\r\n\
          Content-Type: application/octet-stream\r\n\
         Content-Length:  {}\r\n\
         Connection: close\r\n\r\n\
-        {}",
+        {:?}",
                     _contents.len(),
-                    _contents
+                    String::from_utf8(_contents).expect("file content")
                 );
                 stream.write_all(response.as_bytes()).unwrap();
 
