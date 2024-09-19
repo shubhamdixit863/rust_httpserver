@@ -67,7 +67,7 @@ fn handle_connection(mut stream: TcpStream) {
          Content-Type: application/octet-stream\r\n\
         Content-Length:  {}\r\n\
         Connection: close\r\n\r\n\
-        {:?}",
+        {}",
                     _contents.len(),
                     String::from_utf8(_contents).expect("file content")
                 );
