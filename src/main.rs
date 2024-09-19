@@ -3,6 +3,8 @@ use std::io::{BufRead, BufReader, Write};
 use std::net::TcpListener;
 use std::net::TcpStream;
 use std::thread;
+use std::fs;
+
 fn handle_connection(mut stream: TcpStream) {
     let buf_reader = BufReader::new(&mut stream);
     let http_request: Vec<_> = buf_reader
@@ -48,7 +50,51 @@ fn handle_connection(mut stream: TcpStream) {
         stream.write_all(response.as_bytes()).unwrap();
 
 
-    } else {
+    }else if route_part[0]=="files" {
+
+        // Read the file whose name is route_part[1]
+        let contents = fs::read_to_string(route_part[1]);
+
+
+        match contents {
+            Ok(_contents)=>{
+                let response = format!(
+                    "HTTP/1.1 200 OK\r\n\
+         Content-Type: application/octet-stream\r\n\
+        Content-Length:  {}\r\n\
+        Connection: close\r\n\r\n\
+        {}",
+                    _contents.len(),
+                    _contents
+                );
+                stream.write_all(response.as_bytes()).unwrap();
+
+            },
+            Err(e)=>{
+                let response = format!(
+                    "HTTP/1.1 404 Not Found\r\n\
+        Content-Type: text/plain\r\n\
+        Content-Length:  {}\r\n\
+        Connection: close\r\n\r\n\
+        {}",
+                    0,
+                    ""
+                );
+                stream.write_all(response.as_bytes()).unwrap();
+
+
+            }
+        }
+
+
+
+
+
+
+    }
+
+
+    else {
         let response = "HTTP/1.1 404 Not Found\r\n\r\n";
         stream.write_all(response.as_bytes()).unwrap();
     }
@@ -66,9 +112,11 @@ fn main() {
     for stream in listener.incoming() {
         match stream {
             Ok(_stream) => {
-                thread::spawn(|| {
+                thread::spawn( || {
                     handle_connection(_stream)
                 });
+
+
 
             }
             Err(e) => {
