@@ -108,8 +108,11 @@ fn handle_connection(mut stream: TcpStream) {
         let content=String::from_utf8(body).unwrap();
 
         if route_part[0] == "" && route_part[1] == "files"{
-             let file_name=route_part[2];
-            let mut file = File::create(file_name).unwrap();
+
+            let env_args: Vec<String> = env::args().collect();
+            let mut dir = env_args[2].clone();
+            dir.push_str(&route_part[2]);
+            let mut file = File::create(dir).unwrap();
 
             // Write some data to the file
             file.write_all(content.as_ref()).unwrap();
