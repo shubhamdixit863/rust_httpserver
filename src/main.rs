@@ -62,13 +62,13 @@ fn handle_connection(mut stream: TcpStream) {
                     compressed_data.len()
                 );
 
-                let mut response = Vec::new();
+
 
                 // Write the headers first
-                response.write_all(response_headers.as_bytes()).expect("Failed to write response headers");
+                stream.write_all(response_headers.as_bytes()).expect("Failed to write response headers");
 
                 // Write the compressed data after the headers
-                response.write_all(&compressed_data).expect("Failed to write compressed data");
+                stream.write_all(&compressed_data).expect("Failed to write compressed data");
             }else{
                 response= format!(
                     "HTTP/1.1 200 OK\r\n\
