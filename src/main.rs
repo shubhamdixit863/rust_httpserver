@@ -40,7 +40,7 @@ fn handle_connection(mut stream: TcpStream) {
         } else if route_part[0] == "" && route_part[1] == "echo" {
             // send the body
             let mut response:String=String::from("");
-            if accept_encoding =="gzip"{
+            if accept_encoding.contains( "gzip"){
                 response= format!(
                     "HTTP/1.1 200 OK\r\n\
         Content-Type: text/plain\r\n\
