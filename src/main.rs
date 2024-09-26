@@ -53,16 +53,22 @@ fn handle_connection(mut stream: TcpStream) {
 
                 // Finish the compression process and get the compressed data as a Vec<u8>
                 let compressed_data = encoder.finish().expect("Failed to finish compression");
-                response= format!(
+                let response_headers = format!(
                     "HTTP/1.1 200 OK\r\n\
         Content-Type: text/plain\r\n\
         Content-Encoding: gzip\r\n\
         Content-Length: {}\r\n\
-        Connection: close\r\n\r\n\
-        {:?}",
-                    route_part[2].len(),
-                    compressed_data
+        Connection: close\r\n\r\n",
+                    compressed_data.len()
                 );
+
+                let mut response = Vec::new();
+
+                // Write the headers first
+                response.write_all(response_headers.as_bytes()).expect("Failed to write response headers");
+
+                // Write the compressed data after the headers
+                response.write_all(&compressed_data).expect("Failed to write compressed data");
             }else{
                 response= format!(
                     "HTTP/1.1 200 OK\r\n\
