@@ -6,6 +6,9 @@ use std::net::TcpListener;
 use std::net::TcpStream;
 use std::{env, thread};
 use std::fs::File;
+use flate2::write::GzEncoder;
+use flate2::Compression;
+use std::io::prelude::*;
 
 fn handle_connection(mut stream: TcpStream) {
     let mut buf_reader = BufReader::new(&mut stream);
@@ -41,15 +44,24 @@ fn handle_connection(mut stream: TcpStream) {
             // send the body
             let mut response:String=String::from("");
             if accept_encoding.contains( "gzip"){
+
+                // Create a buffer to store the compressed data
+                let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
+
+                // Write the data to be compressed
+                encoder.write_all(route_part[2].as_bytes()).expect("Failed to compress data");
+
+                // Finish the compression process and get the compressed data as a Vec<u8>
+                let compressed_data = encoder.finish().expect("Failed to finish compression");
                 response= format!(
                     "HTTP/1.1 200 OK\r\n\
         Content-Type: text/plain\r\n\
         Content-Encoding: gzip\r\n\
         Content-Length: {}\r\n\
         Connection: close\r\n\r\n\
-        {}",
+        {:?}",
                     route_part[2].len(),
-                    route_part[2]
+                    compressed_data
                 );
             }else{
                 response= format!(
