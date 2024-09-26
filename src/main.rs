@@ -22,6 +22,12 @@ fn handle_connection(mut stream: TcpStream) {
         .find(|&header| header.starts_with("User-Agent: "))
         .map(|header| header.trim_start_matches("User-Agent: "))
         .unwrap_or("User-Agent not found");
+
+    let accept_encoding = http_request
+        .iter()
+        .find(|&header| header.starts_with("Accept-Encoding: "))
+        .map(|header| header.trim_start_matches("Accept-Encoding: "))
+        .unwrap_or("Accept-Encoding Not Found");
     let collection: Vec<&str> = http_request[0].split(" ").collect();
     let route_part: Vec<&str> = collection[1].split("/").collect();
     if collection[0] == "GET" {
@@ -33,15 +39,31 @@ fn handle_connection(mut stream: TcpStream) {
             stream.write_all(response.as_bytes()).unwrap();
         } else if route_part[0] == "" && route_part[1] == "echo" {
             // send the body
-            let response = format!(
-                "HTTP/1.1 200 OK\r\n\
+            let mut response:String=String::from("");
+            if accept_encoding =="gzip"{
+                response= format!(
+                    "HTTP/1.1 200 OK\r\n\
+        Content-Type: text/plain\r\n\
+        Content-Encoding: gzip\r\n\
+        Content-Length: {}\r\n\
+        Connection: close\r\n\r\n\
+        {}",
+                    route_part[2].len(),
+                    route_part[2]
+                );
+            }else{
+                response= format!(
+                    "HTTP/1.1 200 OK\r\n\
         Content-Type: text/plain\r\n\
         Content-Length: {}\r\n\
         Connection: close\r\n\r\n\
         {}",
-                route_part[2].len(),
-                route_part[2]
-            );
+                    route_part[2].len(),
+                    route_part[2]
+                );
+
+            }
+
             stream.write_all(response.as_bytes()).unwrap();
         } else if route_part[0] == "" && route_part[1] == "user-agent" {
             let response = format!(
@@ -88,7 +110,9 @@ fn handle_connection(mut stream: TcpStream) {
                     stream.write_all(response.as_bytes()).unwrap();
                 }
             }
-        } else {
+        }
+
+        else {
             let response = "HTTP/1.1 404 Not Found\r\n\r\n";
             stream.write_all(response.as_bytes()).unwrap();
         }
